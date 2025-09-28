@@ -4,26 +4,31 @@ const songRoutes = require("./routes/song.routes");
 
 const app = express();
 
-// CORS setup (allow localhost during dev + any domain in production)
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://localhost:5176",
+  "https://68d6ed3845ba18149fde9217--moodifyplay.netlify.app", // temporary Netlify preview
+  "https://moodifyplay.netlify.app" // your final Netlify domain
+];
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173", // Vite default dev server
-      "http://localhost:5176", // in case you're using this
-      "https://your-frontend-deployment.com", // replace later with your frontend domain
-      "*" // allow all for now
-    ],
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
 app.use(express.json());
-
-// Routes
 app.use("/api", songRoutes);
 
-// Default root endpoint
 app.get("/", (req, res) => {
   res.send("Moodify backend is running 🚀");
 });
